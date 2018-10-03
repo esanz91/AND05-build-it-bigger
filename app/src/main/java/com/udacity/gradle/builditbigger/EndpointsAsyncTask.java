@@ -1,9 +1,9 @@
 package com.udacity.gradle.builditbigger;
 
-import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import com.esanz.nano.joker.Joker;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
@@ -12,12 +12,20 @@ import com.udacity.gradle.builditbigger.backend.myApi.MyApi;
 
 import java.io.IOException;
 
-public class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
+public class EndpointsAsyncTask extends AsyncTask<Void, Void, String> {
     private static MyApi myApiService = null;
-    private Context context;
+    private final OnLoadListener mListener;
+
+    public interface OnLoadListener {
+        void onLoadJokeListener(@Nullable final String joke);
+    }
+
+    public EndpointsAsyncTask(@NonNull final OnLoadListener listener) {
+        mListener = listener;
+    }
 
     @Override
-    protected String doInBackground(Context... params) {
+    protected String doInBackground(Void... voids) {
         if (null == myApiService) {  // Only do this once
             MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
                     new AndroidJsonFactory(), null)
@@ -36,17 +44,16 @@ public class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
             myApiService = builder.build();
         }
 
-        context = params[0];
-
         try {
             return myApiService.getJoke().execute().getJoke();
         } catch (IOException e) {
-            return e.getMessage();
+            e.printStackTrace();
+            return null;
         }
     }
 
     @Override
-    protected void onPostExecute(String joke) {
-        context.startActivity(Joker.createIntent(context, joke));
+    protected void onPostExecute(@Nullable final String joke) {
+        mListener.onLoadJokeListener(joke);
     }
 }
