@@ -1,13 +1,19 @@
 package com.udacity.gradle.builditbigger;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
+import com.esanz.nano.joker.Joker;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+    implements EndpointsAsyncTask.OnLoadListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +45,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void tellJoke(View view) {
-        new EndpointsAsyncTask().execute(getApplicationContext());
+        new EndpointsAsyncTask(this).execute();
     }
 
-
+    @Override
+    public void onLoadJokeListener(@Nullable final String joke) {
+        if (TextUtils.isEmpty(joke)) {
+            Toast.makeText(this, R.string.fetch_joke_error, Toast.LENGTH_SHORT).show();
+        } else {
+            startActivity(Joker.createIntent(this, joke));
+        }
+    }
 }
