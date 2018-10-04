@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.esanz.nano.joker.Joker;
@@ -15,10 +16,13 @@ import com.esanz.nano.joker.Joker;
 public class MainActivity extends AppCompatActivity
     implements EndpointsAsyncTask.OnLoadListener {
 
+    ProgressBar mProgressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mProgressBar = findViewById(R.id.loading_indicator);
     }
 
 
@@ -45,11 +49,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void tellJoke(View view) {
+        mProgressBar.setVisibility(View.VISIBLE);
         new EndpointsAsyncTask(this).execute();
     }
 
     @Override
     public void onLoadJokeListener(@Nullable final String joke) {
+        mProgressBar.setVisibility(View.GONE);
         if (TextUtils.isEmpty(joke)) {
             Toast.makeText(this, R.string.fetch_joke_error, Toast.LENGTH_SHORT).show();
         } else {
